@@ -1,3 +1,14 @@
+# Baseline EER & t-DCF
+
+
+| Type     	| Feature  	| t-DCF   	| EER %    	|
+|----------	|----------	|---------	|----------	|
+| Baseline 	| LFCC-GMM 	| 0.0663  	| 2.71     	|
+| Baseline 	| CQCC-GMM 	| 0.0123  	| 0.43     	|
+| Our      	| MFCC-GMM 	| 0.31006 	| 16.56460 	|
+| Our      	| MFCC-SVM 	| 0.99969 	| 85.11601 	|
+
+
 ## TODO LIST
 
 - [x] Convert audio to MFCC features using librosa
