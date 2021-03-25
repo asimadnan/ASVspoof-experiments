@@ -20,6 +20,7 @@ parser.add_argument("--train_label_path", required=True, type=str, help='path to
 parser.add_argument("--eval_data_labels", required=True, type=str, help='path to eval labels file create in asv data')
 parser.add_argument("--eval_data_path", required=True, type=str, help='path to eval dataset file create by preprocessing.py')
 parser.add_argument("--output_path", required=True, type=str, help='path to output model and results, ./data/train.csv')
+parser.add_argument("--feature_type", required=True, type=str, help='mfcc or cqcc')
 args = parser.parse_args()
 
 
@@ -30,62 +31,49 @@ train_label_path = args.train_label_path
 eval_data_path = args.eval_data_path
 eval_labels_path = args.eval_data_labels
 output_path = args.output_path
+feature_type = args.feature_type
 
 
 if model_path:
 	svm = pickle.load(open(model_path,'rb'))
-else:
-	#Train Model
-	train_data = pd.read_csv(train_data_path, delimiter = ",", header=None)
-	train_labels = pd.read_csv(train_label_path, delimiter = " ", header=None)
-	train_labels.columns = ['SPEAKER_ID','AUDIO_FILE_NAME','ENVIRONMENT_ID','ATTACK_ID','KEY']
-	X = train_data.drop([0,601], axis=1)
-	y = train_data[[601]]
+else:	
+	max_len = 50  # 1.25 seconds  # check the timesteps of cqcc and mfcc 
+	lens = []
+	X = []
+	y = []
+	file_names = []
+
+
+	with open(train_data_path, 'rb') as infile:
+	    data = pickle.load(infile)
+	    for feat_cqcc, feat_mfcc, label,filename in data:
+
+	        if feature_type == "cqcc":
+	            feats = feat_cqcc
+	        elif feature_type == "mfcc":
+	            feats = feat_mfcc
+	            
+	        num_dim = feats.shape[1]
+	        if len(feats) > max_len:
+	            feats = feats[:max_len]
+	        elif len(feats) < max_len:
+	            # padded with zeros
+	            feats = np.concatenate((feats, np.array([[0.]*num_dim]*(max_len-len(feats)))), axis=0)
+	        X.append(feats.reshape(-1))
+	        y.append(label)
+	        file_names.append(filename)
+
+
 	svm = SVC(probability=True)
+
 	print('Training Started')
 	t0 = time.time()
+
 	svm.fit(X, y)
+
 	print('SVM trained, time spend:', time.time() - t0)
 	current_time = time.strftime("%d-%m-%Y_%H-%M", time.localtime()) 
 	pickle.dump(svm, open(output_path + current_time +'svm_model' + '.svm', 'wb'))
-	
-	
 
 
-# Test with eval files
-eval_data = pd.read_csv(eval_data_path, delimiter = ",", header=None)
-eval_labels =  pd.read_csv(eval_labels_path, delimiter = " ", header=None)
-
-X_eval = eval_data.drop([0,601], axis=1)
-y_eval = eval_data[[601]]
-
-y_score = svm.decision_function(X_eval)
-
-# real target values
-y = eval_data[[601]].values.tolist()
-
-
-
-cm_score = cm_score[['AUDIO_FILE_NAME','ATTACK_ID','KEY','SCORE']]
-
-current_time = time.strftime("%d-%m-%Y_%H-%M", time.localtime()) 
-filename = output_path + current_time + 'cm_score.txt'
-
-cm_score.to_csv(filename,index=False,sep=" ",header=False)
-cm_score
-
-print('cm_score file saved at:',filename)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+#Test with eval files...

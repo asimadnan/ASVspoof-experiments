@@ -23,7 +23,7 @@ parser.add_argument("--train_data_path", required=True, type=str, help='path to 
 parser.add_argument("--train_label_path", required=True, type=str, help='path to train label file in asv data')
 parser.add_argument("--eval_data_labels", required=True, type=str, help='path to eval labels file create in asv data')
 parser.add_argument("--eval_data_path", required=True, type=str, help='path to eval dataset file create by preprocessing.py')
-parser.add_argument("--output_path", required=False, type=str, help='path to output model and results, ./data/train.csv')
+parser.add_argument("--output_path", required=True, type=str, help='path to output model and results, ./data/train.csv')
 args = parser.parse_args()
 
 
@@ -153,11 +153,26 @@ y = eval_data[[601]].values.tolist()
 
 # Calc EER
 
-fpr, tpr, thresholds = roc_curve(y, y_score, pos_label='spoof')
-eer = brentq(lambda x : 1. - x - interp1d(fpr, tpr)(x), 0., 1.)
-print ('EER', eer)
+# fpr, tpr, thresholds = roc_curve(y, y_score, pos_label='spoof')
+# eer = brentq(lambda x : 1. - x - interp1d(fpr, tpr)(x), 0., 1.)
+# print ('EER', eer)
 
-print(final_score)
+final_score.columns = ['AUDIO_FILE_NAME','SCORE']
+final_score.loc[final_score['SCORE'] > 0, 'Prediction'] = 'bonafide'
+final_score.loc[final_score['SCORE'] < 0, 'Prediction'] = 'spoof'
+
+eval_labels.columns = ['SPEAKER_ID','AUDIO_FILE_NAME','ENVIRONMENT_ID','ATTACK_ID','KEY']
+cm_score = pd.merge(final_score, eval_labels, on="AUDIO_FILE_NAME")	
+
+cm_score = cm_score[['AUDIO_FILE_NAME','ATTACK_ID','KEY','SCORE']]
+
+current_time = time.strftime("%d-%m-%Y_%H-%M", time.localtime()) 
+filename = output_path + current_time + 'cm_score.txt'
+
+cm_score.to_csv(filename,index=False,sep=" ",header=False)
+cm_score
+
+print('cm_score file saved at:',filename)
 
 
 
@@ -166,3 +181,4 @@ print(final_score)
 
 
 
+	
