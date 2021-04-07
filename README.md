@@ -1,12 +1,13 @@
 # Baseline EER & t-DCF
 
 
-| Type     	| Feature  	| t-DCF   	| EER %    	|
-|----------	|----------	|---------	|----------	|
-| Baseline 	| LFCC-GMM 	| 0.0663  	| 2.71     	|
-| Baseline 	| CQCC-GMM 	| 0.0123  	| 0.43     	|
-| Our      	| MFCC-GMM 	| 0.31006 	| 16.56460 	|
-| Our      	| MFCC-SVM 	| 0.99969 	| 85.11601 	|
+| Type     	| DataSet   | Feature  	| t-DCF   	| EER %    	|
+|----------	|----------	|----------	|---------	|----------	|
+| Baseline 	| Dev     	| LFCC-GMM 	| 0.0663  	| 2.71     	|
+| Baseline 	| Dev     	| CQCC-GMM 	| 0.0123  	| 0.43     	|
+| Our      	| Eval     	| MFCC-GMM 	| 0.31006 	| 16.56460 	|
+| Our      	| Eval     	| MFCC-SVM 	| 0.99969 	| 85.11601 	|
+| Our      	| Dev     	| CQCC-GMM 	| 0.90727 	| 0.3630 	|
 
 
 ## TODO LIST
